@@ -1,6 +1,6 @@
-/** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true, // Mặc định là true
+  reactStrictMode: true,
+  distDir: ".next", // Đảm bảo Next.js sử dụng thư mục đúng
   images: {
     remotePatterns: [
       {
@@ -10,6 +10,7 @@ const nextConfig = {
       },
     ],
   },
+  swcMinify: true,
 };
 
 module.exports = nextConfig;
