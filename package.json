@@ -2,8 +2,6 @@
   "name": "next14e",
   "version": "0.1.0",
   "private": true,
-  "main": "page.tsx",
-  "homepage": "./",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
