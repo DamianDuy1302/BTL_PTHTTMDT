@@ -1,0 +1,5 @@
+1. Trang Admin là mình sử dụng payloadcms. 
+Thư viện này cần cấu hình bla bla mà mình không hiểu lắm, sau đó sẽ có trang admin out of the box để sử dụng luôn. 
+Nhớ là phải kết nối với DB nhé.
+
+2. Code Back-end trên NextJS như hạch. Không hiểu gì
