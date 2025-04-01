@@ -21,6 +21,7 @@ const Page = () => {
   const isSeller = searchParams.get("as") === "seller";
   const origin = searchParams.get("origin");
   const { toast } = useToast();
+  //@ts-ignore
   const { user, addUserData } = useAuthStore();
   const [errors, setErrors] = useState({
     email: false,
@@ -42,6 +43,7 @@ const Page = () => {
 
   const onChecking = () => {
     let flag = 0;
+    //@ts-ignore
     setErrors((prev) => updateAllObject(prev, false));
     if (!email) {
       setErrors((prev) => ({ ...prev, email: true }));

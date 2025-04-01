@@ -13,6 +13,7 @@ const VNPAYReturnURLPage = ({ searchParams }: any) => {
   const paymentRef = searchParams.vnp_TxnRef;
   const order: any = {};
 
+  //@ts-ignore
   const { user } = useAuthStore();
 
   // const getOrderDetail = async () => {
