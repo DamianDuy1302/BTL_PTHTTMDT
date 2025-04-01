@@ -60,6 +60,7 @@ export function AppSidebar(props: { isCollapsed: boolean }) {
   const { isCollapsed } = props;
   console.log(isCollapsed);
   const router = useRouter();
+  //@ts-ignore
   const { clearUserData } = useAuthStore();
   return (
     <Sidebar collapsible="icon">

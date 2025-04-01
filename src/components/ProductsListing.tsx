@@ -1,15 +1,13 @@
 "use client";
 
-import { Product } from "@/payload-types";
-import { useEffect, useState } from "react";
-import { Skeleton } from "./ui/skeleton";
-import Link from "next/link";
 import { cn, formatPrice } from "@/lib/utils";
-import { PRODUCT_CATEGORIES } from "@/config";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 import ImagesSlider from "./ImagesSlider";
+import { Skeleton } from "./ui/skeleton";
 
 interface ProductListingProps {
-  product: Product | null;
+  product: any;
   index: number;
 }
 

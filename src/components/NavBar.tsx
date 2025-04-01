@@ -1,20 +1,16 @@
 "use client";
-import Link from "next/link";
-import MaxWidthWrapper from "./MaxWidthWrapper";
-import { Icons } from "./Icons";
-import NavItems from "./NavItems";
-import { buttonVariants } from "./ui/button";
-import Cart from "./Cart";
-import { getServerSideUser } from "@/lib/payload-utils";
-import { cookies } from "next/headers";
-import UserAccountNav from "./UserAccountNav";
-import MobileNav from "./MobileNav";
-import useAuthStore from "@/stores/authStore";
-import { AlignJustify, ChevronDown, ChevronUp, X } from "lucide-react";
-import { useCart } from "@/stores/cartStore";
 import { useToast } from "@/hooks/use-toast";
+import useAuthStore from "@/stores/authStore";
+import { useCart } from "@/stores/cartStore";
+import { AlignJustify, ChevronDown, ChevronUp, X } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import Cart from "./Cart";
+import { Icons } from "./Icons";
+import MaxWidthWrapper from "./MaxWidthWrapper";
+import { buttonVariants } from "./ui/button";
+import UserAccountNav from "./UserAccountNav";
 const NavBar = () => {
   // @ts-ignore
   const { user, clearUserData } = useAuthStore();

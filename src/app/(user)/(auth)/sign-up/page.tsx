@@ -5,23 +5,14 @@ import MaxWidthWrapper from "@/components/MaxWidthWrapper";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
-import { ArrowRight, Loader2 } from "lucide-react";
-import Link from "next/link";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
-import {
-  AuthCredentialsValidator,
-  TAuthCredentialsValidator,
-} from "@/lib/validators/account-credentials-validator";
-import { trpc } from "@/trpc/client";
-import { toast } from "sonner";
-import { ZodError } from "zod";
-import { useState } from "react";
-import { updateAllObject } from "@/utils/functions";
 import axiosInstance from "@/config/axios";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
+import { updateAllObject } from "@/utils/functions";
+import { ArrowRight, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 const SignUpPage = () => {
   const router = useRouter();
@@ -38,6 +29,7 @@ const SignUpPage = () => {
 
   const onChecking = () => {
     let flag = 0;
+    //@ts-ignore
     setErrors((prev) => updateAllObject(prev, false));
     if (!email) {
       setErrors((prev) => ({ ...prev, email: true }));

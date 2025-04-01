@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 function DecentRoute({ children }: { children: React.ReactNode }) {
+  //@ts-ignore
   const { user, isAuthReady } = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();

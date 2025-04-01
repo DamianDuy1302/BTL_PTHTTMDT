@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 function AuthRoute({ children }: any) {
+  //@ts-ignore
   const { user, isAuthReady } = useAuthStore();
 
   console.log("user", user);
