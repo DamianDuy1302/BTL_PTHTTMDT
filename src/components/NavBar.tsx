@@ -31,6 +31,12 @@ const NavBar = () => {
   useEffect(() => {
     setIsOpenMyAccount(false);
   }, [isOpenMobileNav]);
+
+  useEffect(() => {
+    setIsOpenMobileNav(false);
+    setIsOpenMyAccount(false);
+    //@ts-ignore
+  }, [router.pathname]);
   useEffect(() => {
     function handleResize() {
       if (window.innerWidth >= 1024) {
@@ -116,58 +122,96 @@ const NavBar = () => {
                             </Link>
                             <X onClick={() => setIsOpenMobileNav(false)} />
                           </div>
-                          <div className="relative -top-4 w-full h-full pt-4 pb-2 font-medium text-gray-900">
-                            <div className="flex flex-col justify-center items-center gap-4">
-                              <div
-                                className="cursor-pointer flex items-center justify-center gap-2 relative -right-[12px]"
-                                onClick={() => {
-                                  setIsOpenMyAccount(!isOpenMyAccount);
-                                }}
-                              >
-                                Tài khoản của tôi
-                                <div>
-                                  {!isOpenMyAccount ? (
-                                    <ChevronDown size={16} />
-                                  ) : (
-                                    <ChevronUp size={16} />
-                                  )}
+                          {user ? (
+                            <div className="relative -top-4 w-full h-full pt-4 pb-2 font-medium text-gray-900">
+                              <div className="flex flex-col justify-center items-center gap-4">
+                                <div
+                                  className="cursor-pointer flex items-center justify-center gap-2 relative -right-[12px]"
+                                  onClick={() => {
+                                    setIsOpenMyAccount(!isOpenMyAccount);
+                                  }}
+                                >
+                                  Tài khoản của tôi
+                                  <div>
+                                    {!isOpenMyAccount ? (
+                                      <ChevronDown size={16} />
+                                    ) : (
+                                      <ChevronUp size={16} />
+                                    )}
+                                  </div>
+                                </div>
+                                {isOpenMyAccount && (
+                                  <div className="-mt-2 flex flex-col gap-2 items-center justify-center text-gray-600 text-sm font-medium">
+                                    <div className="text-gray-900">
+                                      {user.email}
+                                    </div>
+                                    {user.role === "admin" && (
+                                      <Link
+                                        href="/admin/dashboard"
+                                        className="hover:text-gray-900"
+                                        onClick={() => {
+                                          setIsOpenMobileNav(false);
+                                        }}
+                                      >
+                                        Trang Admin
+                                      </Link>
+                                    )}
+                                    <Link
+                                      href="/order-list"
+                                      className="hover:text-gray-900"
+                                      onClick={() => {
+                                        setIsOpenMobileNav(false);
+                                      }}
+                                    >
+                                      Danh sách đơn hàng
+                                    </Link>
+                                    <div
+                                      className="cursor-pointer hover:text-gray-900"
+                                      onClick={() => {
+                                        handleLogOut();
+                                        setIsOpenMobileNav(false);
+                                      }}
+                                    >
+                                      Đăng xuất
+                                    </div>
+                                  </div>
+                                )}
+
+                                <Link
+                                  href={"/cart"}
+                                  onClick={() => {
+                                    setIsOpenMobileNav(false);
+                                  }}
+                                >
+                                  Giỏ hàng ({items.length})
+                                </Link>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="relative -top-4 w-full h-full pt-4 pb-2 font-medium text-gray-900">
+                              <div className="flex flex-col justify-center items-center gap-4">
+                                <div
+                                  className="cursor-pointer flex items-center justify-center gap-"
+                                  onClick={() => {
+                                    router.push("/sign-in");
+                                    setIsOpenMobileNav(false);
+                                  }}
+                                >
+                                  Đăng nhập
+                                </div>
+
+                                <div
+                                  className="cursor-pointer flex items-center justify-center gap-"
+                                  onClick={() => {
+                                    router.push("/sign-up");
+                                    setIsOpenMobileNav(false);
+                                  }}
+                                >
+                                  Đăng ký
                                 </div>
                               </div>
-                              {isOpenMyAccount && (
-                                <div className="-mt-2 flex flex-col gap-2 items-center justify-center text-gray-600 text-sm font-medium">
-                                  <div className="text-gray-900">
-                                    {user.email}
-                                  </div>
-                                  {user.role === "admin" && (
-                                    <Link
-                                      href="/admin/dashboard"
-                                      className="hover:text-gray-900"
-                                    >
-                                      Trang Admin
-                                    </Link>
-                                  )}
-                                  <Link
-                                    href="/order-list"
-                                    className="hover:text-gray-900"
-                                  >
-                                    Danh sách đơn hàng
-                                  </Link>
-                                  <div
-                                    className="cursor-pointer hover:text-gray-900"
-                                    onClick={() => {
-                                      handleLogOut();
-                                    }}
-                                  >
-                                    Đăng xuất
-                                  </div>
-                                </div>
-                              )}
-
-                              <Link href={"/cart"} className="">
-                                Giỏ hàng ({items.length})
-                              </Link>
                             </div>
-                          </div>
+                          )}
                         </div>
                       </div>
                     </div>
