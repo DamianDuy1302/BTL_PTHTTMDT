@@ -29,7 +29,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import useAuthStore from "@/stores/authStore";
 
 // Menu items.
@@ -58,8 +58,9 @@ const items = [
 
 export function AppSidebar(props: { isCollapsed: boolean }) {
   const { isCollapsed } = props;
-  console.log(isCollapsed);
+
   const router = useRouter();
+  const pathname = usePathname();
   //@ts-ignore
   const { clearUserData } = useAuthStore();
   return (
@@ -74,7 +75,14 @@ export function AppSidebar(props: { isCollapsed: boolean }) {
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
+                <SidebarMenuItem
+                  key={item.title}
+                  className={
+                    pathname === item.url
+                      ? `bg-sidebar-accent text-sidebar-accent-foreground`
+                      : ""
+                  }
+                >
                   <SidebarMenuButton asChild>
                     <a href={item.url}>
                       <item.icon />
