@@ -2,59 +2,53 @@
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
-  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
 
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Pagination,
   PaginationContent,
   PaginationEllipsis,
   PaginationItem,
   PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
 } from "@/components/ui/pagination";
+import { Textarea } from "@/components/ui/textarea";
+import axiosInstance from "@/config/axios";
+import { formatDate } from "@/utils/functions";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import {
+  ArrowDownNarrowWide,
+  ArrowUpNarrowWide,
   ChevronLeft,
   ChevronRight,
-  CirclePlus,
   Eye,
-  Pencil,
+  ListFilter,
   Trash2,
 } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useEffect, useState } from "react";
-import axiosInstance from "@/config/axios";
-import ImageDropzone from "@/components/ImageDropZone";
-import { Textarea } from "@/components/ui/textarea";
-import { formatDate } from "@/utils/functions";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const AdminOrdersPage = () => {
   const [orderList, setOrderList] = useState([]);
   const [isModalEditOpen, setIsModalEditOpen] = useState(false);
+  const [paymentMethodFilter, setPaymentMethodFilter] = useState("");
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState("");
+  const [totalPriceSort, setTotalPriceSort] = useState("");
   const [item, setItem] = useState({
     created_at: "",
     customer_name: "",
@@ -68,6 +62,11 @@ const AdminOrdersPage = () => {
     try {
       const token = localStorage.getItem("access_token").replace(/"/g, "");
       const { data } = await axiosInstance.get("/order/list", {
+        params: {
+          "payment-method": paymentMethodFilter,
+          "payment-status": paymentStatusFilter,
+          // total_price_sort: totalPriceSort,
+        },
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -85,7 +84,7 @@ const AdminOrdersPage = () => {
 
   useEffect(() => {
     getOrderList();
-  }, []);
+  }, [paymentMethodFilter, paymentStatusFilter]);
   return (
     <div>
       <div className="text-xl font-bold flex items-center justify-between">
@@ -98,10 +97,156 @@ const AdminOrdersPage = () => {
               <TableHead className="w-[100px]">ID</TableHead>
               <TableHead>Tên khách hàng</TableHead>
               <TableHead>Thời gian đặt</TableHead>
-              <TableHead>Tổng thanh toán</TableHead>
+              <TableHead>
+                <div className="flex items-center gap-2">
+                  <div>Tổng thanh toán</div>
+                  <div
+                    onClick={() => {
+                      if (totalPriceSort === "asc") {
+                        setTotalPriceSort("desc");
+                      } else if (totalPriceSort === "desc") {
+                        setTotalPriceSort("");
+                      } else {
+                        setTotalPriceSort("asc");
+                      }
+                    }}
+                    className="cursor-pointer"
+                  >
+                    {totalPriceSort === "asc" ? (
+                      <ArrowUpNarrowWide size={16} color="blue" />
+                    ) : totalPriceSort === "desc" ? (
+                      <ArrowDownNarrowWide size={16} color="blue" />
+                    ) : (
+                      <ListFilter size={16} />
+                    )}
+                  </div>
+                </div>
+              </TableHead>
               <TableHead>Trạng thái</TableHead>
-              <TableHead>Phương thức thanh toán</TableHead>
-              <TableHead>Trạng thái thanh toán</TableHead>
+              <TableHead>
+                <div className="flex items-center gap-2">
+                  <div>Phương thức thanh toán</div>
+                  <div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="12"
+                          height="12"
+                          viewBox="0 0 24 24"
+                          fill={paymentMethodFilter ? "blue" : "none"} // Nếu có filter, fill màu xanh
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className={`lucide lucide-funnel-icon lucide-funnel relative top-[1px]`}
+                        >
+                          <path d="M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z" />
+                        </svg>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="flex flex-col gap-1">
+                        <Button
+                          variant="outline"
+                          className={
+                            paymentMethodFilter === "Banking"
+                              ? "bg-gray-200"
+                              : ""
+                          }
+                          onClick={(e) => {
+                            e.preventDefault();
+                            if (paymentMethodFilter !== "Banking") {
+                              setPaymentMethodFilter("Banking");
+                            } else {
+                              setPaymentMethodFilter("");
+                            }
+                          }}
+                        >
+                          Banking
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className={
+                            paymentMethodFilter === "COD" ? "bg-gray-200" : ""
+                          }
+                          onClick={(e) => {
+                            e.preventDefault();
+                            if (paymentMethodFilter !== "COD") {
+                              setPaymentMethodFilter("COD");
+                            } else {
+                              setPaymentMethodFilter("");
+                            }
+                          }}
+                        >
+                          COD
+                        </Button>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+              </TableHead>
+              <TableHead>
+                <div className="flex items-center gap-2">
+                  <div>Trạng thái thanh toán</div>
+                  <div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="12"
+                          height="12"
+                          viewBox="0 0 24 24"
+                          fill={paymentStatusFilter ? "blue" : "none"} // Nếu có filter, fill màu xanh
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className={`lucide lucide-funnel-icon lucide-funnel relative top-[1px]`}
+                        >
+                          <path d="M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z" />
+                        </svg>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="flex flex-col gap-1">
+                        <Button
+                          variant="outline"
+                          className={
+                            paymentStatusFilter === "Đã thanh toán"
+                              ? "bg-gray-200"
+                              : ""
+                          }
+                          onClick={(e) => {
+                            e.preventDefault();
+                            if (paymentStatusFilter !== "Đã thanh toán") {
+                              setPaymentStatusFilter("Đã thanh toán");
+                            } else {
+                              setPaymentStatusFilter("");
+                            }
+                          }}
+                        >
+                          Đã thanh toán
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className={
+                            paymentStatusFilter === "Đang chờ"
+                              ? "bg-gray-200"
+                              : ""
+                          }
+                          onClick={(e) => {
+                            e.preventDefault();
+                            if (paymentStatusFilter !== "Đang chờ") {
+                              setPaymentStatusFilter("Đang chờ");
+                            } else {
+                              setPaymentStatusFilter("");
+                            }
+                          }}
+                        >
+                          Đang chờ
+                        </Button>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+              </TableHead>
 
               <TableHead>Ghi chú</TableHead>
 
