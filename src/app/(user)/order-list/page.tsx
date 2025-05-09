@@ -1,4 +1,5 @@
 "use client";
+import { PaginationDemo } from "@/components/Pagination";
 import {
   Table,
   TableBody,
@@ -18,6 +19,9 @@ import { useEffect, useState } from "react";
 const OrderListPage = () => {
   const router = useRouter();
 
+  const pageSize = 4;
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPage, setTotalPage] = useState(0);
   const [orderList, setOrderList] = useState([]);
   //@ts-ignore
   const token = localStorage.getItem("access_token").replace(/"/g, "");
@@ -25,18 +29,21 @@ const OrderListPage = () => {
     const { data } = await axiosInstance.get("/order/list", {
       params: {
         "my-order": true,
+        page: currentPage,
+        size: pageSize,
       },
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
-    console.log(data);
+
     setOrderList(data.data.orders);
+    setTotalPage(Math.ceil(data.data.count / pageSize));
   };
 
   useEffect(() => {
     getOrderList();
-  }, []);
+  }, [currentPage]);
 
   return (
     <div>
@@ -71,12 +78,20 @@ const OrderListPage = () => {
                     <TableCell>{invoice.payment_method}</TableCell>
                     <TableCell>{formatDate(invoice.created_at)}</TableCell>
                     <TableCell className="text-right">
-                      {formatPrice(invoice.total_price + 1)}
+                      {formatPrice(invoice.total_price)}
                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
+          </div>
+
+          <div className="mt-4">
+            <PaginationDemo
+              totalPage={totalPage}
+              currentPage={currentPage}
+              onPageChange={setCurrentPage}
+            />
           </div>
         </div>
       </div>

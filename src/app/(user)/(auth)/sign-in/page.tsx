@@ -14,6 +14,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import useAuthStore from "@/stores/authStore";
 import { useToast } from "@/hooks/use-toast";
+import { useCart } from "@/stores/cartStore";
 
 const Page = () => {
   const searchParams = useSearchParams();
@@ -21,6 +22,7 @@ const Page = () => {
   const isSeller = searchParams.get("as") === "seller";
   const origin = searchParams.get("origin");
   const { toast } = useToast();
+  const { addItem } = useCart();
   //@ts-ignore
   const { user, addUserData } = useAuthStore();
   const [errors, setErrors] = useState({
@@ -67,22 +69,34 @@ const Page = () => {
       });
       const { access_token, ...userData } = data.data;
 
-      toast({
-        variant: "success",
-        title: "Sign in successfully",
-      });
       if (userData) {
         localStorage.setItem("access_token", JSON.stringify(access_token));
         addUserData(userData);
-      }
 
+        const cartStorageAuth = localStorage.getItem("csa");
+        if (cartStorageAuth) {
+          const cart = JSON.parse(cartStorageAuth);
+          cart.forEach((item: any) => {
+            if (item.email === userData.email && item.items.length > 0) {
+              item.items.forEach((cartItem: any) => {
+                const { quantity, ...productWithoutQuantity } = cartItem;
+                addItem(productWithoutQuantity, quantity);
+              });
+            }
+          });
+        }
+      }
+      toast({
+        variant: "success",
+        title: "Đăng nhập thành công",
+      });
       router.push("/");
     } catch (error) {
       console.log(error);
       toast({
         variant: "destructive",
-        title: "Sign in failed",
-        description: "Something went wrong, please try again later",
+        title: "Đăng nhập thất bại",
+        description: "Có lỗi xảy ra, xin vui lòng thử lại sau",
       });
     } finally {
       setIsLoading(false);
@@ -91,12 +105,12 @@ const Page = () => {
 
   return (
     <>
-      <div className="container relative flex pt-20 flex-col items-center justify-center lg:px-0 mx-auto">
+      <div className="container relative flex py-20 flex-col items-center justify-center lg:px-0 mx-auto">
         <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
           <div className="flex flex-col items-center space-y-2 text-center">
             <Icons.logo className="h-20 w-20" />
             <h1 className="text-2xl font-semibold tracking-tight">
-              Sign in to your {isSeller ? "seller" : ""} account
+              Đăng nhập {isSeller ? "seller" : ""}
             </h1>
 
             <Link
@@ -106,8 +120,7 @@ const Page = () => {
               })}
               href="/sign-up"
             >
-              Don&apos;t have an account?
-              <ArrowRight className="h-4 w-4" />
+              Chưa có tài khoản? <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
 
@@ -126,12 +139,14 @@ const Page = () => {
                       onChange={(e) => setEmail(e.target.value)}
                     />
                     {errors.email && (
-                      <p className="text-sm text-red-500">Email is required</p>
+                      <p className="text-sm text-red-500">
+                        Vui lòng nhập email
+                      </p>
                     )}
                   </div>
 
                   <div className="grid gap-1 py-2">
-                    <Label htmlFor="password">Password</Label>
+                    <Label htmlFor="password">Mật khẩu</Label>
                     <Input
                       // {...register("password")}
                       type="password"
@@ -143,9 +158,21 @@ const Page = () => {
                     />
                     {errors.password && (
                       <p className="text-sm text-red-500">
-                        Password is required
+                        Vui lòng nhập mật khẩu
                       </p>
                     )}
+                  </div>
+
+                  <div className="text-primary font-semibold text-sm pb-4">
+                    <span
+                      className="cursor-pointer underline-offset-4 hover:underline"
+                      onClick={() => {
+                        router.push("/forgot-password");
+                      }}
+                    >
+                      {" "}
+                      Quên mật khẩu?
+                    </span>
                   </div>
 
                   <Button
@@ -158,7 +185,7 @@ const Page = () => {
                     {isLoading && (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     )}
-                    Sign in
+                    Đăng nhập
                   </Button>
                 </div>
               </form>
@@ -184,7 +211,7 @@ const Page = () => {
                   disabled={isLoading}
                   className="max-w-[350px] mx-auto w-full"
                 >
-                  Continue as customer
+                  Tiếp tuc với tư cách người mua
                 </Button>
               ) : (
                 <Button
@@ -193,7 +220,7 @@ const Page = () => {
                   disabled={isLoading}
                   className="max-w-[350px] mx-auto w-full"
                 >
-                  Continue as seller
+                  Tiếp tục với tư cách người bán
                 </Button>
               )}
             </div>

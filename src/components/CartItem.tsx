@@ -7,7 +7,6 @@ import { Input } from "./ui/input";
 import { removeSpaces } from "@/utils/functions";
 
 const CartItem = ({ product, index }: any) => {
-  console.log(product);
   const variant = product.variants.find(
     (variant: any) =>
       removeSpaces(Object.values(variant.options).join(", ")) ===
@@ -18,13 +17,6 @@ const CartItem = ({ product, index }: any) => {
 
   return (
     <div className="space-y-3 py-2">
-      {/* <button
-        onClick={() => {
-          clearCart();
-        }}
-      >
-        hahaha
-      </button> */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center space-x-4">
           <div className="relative aspect-square h-16 w-16 min-w-fit overflow-hidden rounded border">

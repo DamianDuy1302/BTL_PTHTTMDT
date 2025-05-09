@@ -23,14 +23,11 @@ const Cart = () => {
   const { items, reRenderCart } = useCart();
   const itemCount = items.length;
 
-  console.log(items);
-  console.log(itemCount);
-
   const cartTotal = items.reduce((total, item) => {
     return total + item.price * item.quantity;
   }, 0);
 
-  const fee = 1;
+  const fee = 10000;
 
   useEffect(() => {}, [reRenderCart]);
   return (
@@ -66,11 +63,11 @@ const Cart = () => {
                 <Separator></Separator>
                 <div className="space-y-1.5 text-sm">
                   <div className="flex">
-                    <span className="flex-1">Phí vận chuyển</span>
+                    <span className="flex-1">Phí giao dịch</span>
                     <span>Miễn phí</span>
                   </div>
                   <div className="flex">
-                    <span className="flex-1">Phí giao dịch</span>
+                    <span className="flex-1">Phí vận chuyển</span>
                     <span>{formatPrice(fee)}</span>
                   </div>
                   <div className="flex">

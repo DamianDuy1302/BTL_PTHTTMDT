@@ -23,17 +23,21 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { useRouter, usePathname } from "next/navigation";
+
+import { useCart } from "@/stores/cartStore";
+import { usePathname, useRouter } from "next/navigation";
+import { useToast } from "@/hooks/use-toast";
 import useAuthStore from "@/stores/authStore";
 
 // Menu items.
-const items = [
+const sidebarItems = [
   {
     title: "Dashboard",
     url: "/admin/dashboard",
@@ -62,7 +66,10 @@ export function AppSidebar(props: { isCollapsed: boolean }) {
   const router = useRouter();
   const pathname = usePathname();
   //@ts-ignore
-  const { clearUserData } = useAuthStore();
+  const { user, clearUserData } = useAuthStore();
+  const { items, clearCart } = useCart();
+  const { toast } = useToast();
+
   return (
     <Sidebar collapsible="icon">
       <SidebarContent>
@@ -74,7 +81,7 @@ export function AppSidebar(props: { isCollapsed: boolean }) {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
+              {sidebarItems.map((item) => (
                 <SidebarMenuItem
                   key={item.title}
                   className={
@@ -122,8 +129,27 @@ export function AppSidebar(props: { isCollapsed: boolean }) {
                 <DropdownMenuItem
                   className="cursor-pointer"
                   onClick={() => {
+                    const saveCart = (userEmail, items) => {
+                      const existingData =
+                        JSON.parse(localStorage.getItem("csa")) || [];
+                      const index = existingData.findIndex(
+                        (entry) => entry.email === userEmail
+                      );
+                      if (index !== -1) {
+                        existingData[index].items = items;
+                      } else {
+                        existingData.push({ email: userEmail, items });
+                      }
+                      localStorage.setItem("csa", JSON.stringify(existingData));
+                    };
+                    saveCart(user.email, items);
+                    clearCart();
                     clearUserData();
                     router.push("/");
+                    toast({
+                      variant: "success",
+                      title: "Đăng xuất thành công",
+                    });
                   }}
                 >
                   <span>Sign out</span>

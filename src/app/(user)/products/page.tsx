@@ -1,14 +1,18 @@
 "use client";
 import MaxWidthWrapper from "@/components/MaxWidthWrapper";
+import { PaginationDemo } from "@/components/Pagination";
 import ProductsListing from "@/components/ProductsListing";
 import axiosInstance from "@/config/axios";
 import { useEffect, useState } from "react";
 
 const ProductsPage = ({ searchParams }: any) => {
   const { category_id, key } = searchParams;
-  console.log(category_id, key);
+
+  const pageSize = 4; // Số lượng sản phẩm trên mỗi trang
 
   const [productList, setProductList] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPage, setTotalPage] = useState(0);
 
   const getProductList = async () => {
     try {
@@ -16,11 +20,12 @@ const ProductsPage = ({ searchParams }: any) => {
         params: category_id
           ? { "category-id": category_id }
           : key
-            ? { key: key }
-            : {},
+          ? { key: key }
+          : {},
       });
-      console.log(data);
+
       setProductList(data.data.product);
+      setTotalPage(Math.ceil(data.data.product.length / pageSize)); // Tính tổng số trang
     } catch (error) {
       console.log(error);
     }
@@ -43,7 +48,13 @@ const ProductsPage = ({ searchParams }: any) => {
               {category_id ? (
                 <span>danh mục: {productList[0].category_name}</span>
               ) : (
-                <>{key && <span>từ khóa: {key}</span>}</>
+                <>
+                  {key ? (
+                    <span>từ khóa: {key}</span>
+                  ) : (
+                    <span>tất cả sản phẩm</span>
+                  )}
+                </>
               )}
             </>
           ) : null}
@@ -53,15 +64,28 @@ const ProductsPage = ({ searchParams }: any) => {
           {productList &&
             productList.length > 0 &&
             productList.map((product: any, index: any) => {
+              // Tính toán chỉ số bắt đầu và kết thúc của sản phẩm trên trang hiện tại
+              const startIndex = (currentPage - 1) * pageSize;
+              const endIndex = startIndex + pageSize;
+
+              if (index < startIndex || index >= endIndex) {
+                return null;
+              } // Không hiển thị sản phẩm này trên trang hiện tại
               return (
-                <div key={index}>
-                  <ProductsListing
-                    product={product}
-                    index={index}
-                  ></ProductsListing>
-                </div>
+                <ProductsListing
+                  key={product.id}
+                  product={productList[index]}
+                  index={index}
+                />
               );
             })}
+        </div>
+        <div className="mt-4">
+          <PaginationDemo
+            totalPage={totalPage}
+            currentPage={currentPage}
+            onPageChange={setCurrentPage}
+          />
         </div>
       </div>
     </MaxWidthWrapper>

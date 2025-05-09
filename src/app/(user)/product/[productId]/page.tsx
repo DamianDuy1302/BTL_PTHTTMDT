@@ -189,8 +189,8 @@ const ProductPage = ({ params }: any) => {
                         return null;
                       })}
                     </div>
-                    <div className="grid grid-cols-12 mt-10">
-                      <div className="col-span-6 flex w-full items-center gap-2">
+                    <div className="flex justify-center items-center mt-10">
+                      <div className=" flex w-[260px] lg:w-full items-center gap-2">
                         <Button
                           disabled={quantity === 1}
                           variant={"outline"}

@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/pagination";
 import { Textarea } from "@/components/ui/textarea";
 import axiosInstance from "@/config/axios";
-import { formatDate } from "@/utils/functions";
+import { formatDate, updateAllObject } from "@/utils/functions";
 import {
   ArrowDownNarrowWide,
   ArrowUpNarrowWide,
@@ -34,6 +34,7 @@ import {
   ChevronRight,
   Eye,
   ListFilter,
+  Pencil,
   Trash2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -42,22 +43,58 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { PaginationDemo } from "@/components/Pagination";
+import { useToast } from "@/hooks/use-toast";
 
 const AdminOrdersPage = () => {
+  const pageSize = 1;
+  const { toast } = useToast();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPage, setTotalPage] = useState(0);
+
   const [orderList, setOrderList] = useState([]);
   const [isModalEditOpen, setIsModalEditOpen] = useState(false);
   const [paymentMethodFilter, setPaymentMethodFilter] = useState("");
   const [paymentStatusFilter, setPaymentStatusFilter] = useState("");
-  const [totalPriceSort, setTotalPriceSort] = useState("");
+  const [sortValue, setSortValue] = useState("");
   const [item, setItem] = useState({
     created_at: "",
     customer_name: "",
     total_price: 0,
+    payment_ref: "",
     payment_method: "",
     payment_status: "",
     status: "",
     note: "",
   });
+
+  const [errors, setErrors] = useState({
+    customer_name: false,
+    total_price: false,
+    payment_method: false,
+    payment_status: false,
+    status: false,
+    note: false,
+  });
+
+  const onChecking = () => {
+    let flag = 0;
+    //@ts-ignore
+    setErrors((prev) => updateAllObject(prev, false));
+    if (!item.customer_name) {
+      setErrors((prev) => ({ ...prev, customer_name: true }));
+      flag = 1;
+    }
+    if (!item.payment_status) {
+      setErrors((prev) => ({ ...prev, payment_status: true }));
+      flag = 1;
+    }
+    if (!item.status) {
+      setErrors((prev) => ({ ...prev, status: true }));
+      flag = 1;
+    }
+    return flag === 0;
+  };
   const getOrderList = async () => {
     try {
       const token = localStorage.getItem("access_token").replace(/"/g, "");
@@ -65,26 +102,68 @@ const AdminOrdersPage = () => {
         params: {
           "payment-method": paymentMethodFilter,
           "payment-status": paymentStatusFilter,
-          // total_price_sort: totalPriceSort,
+          sort: sortValue,
+          page: currentPage,
+          size: pageSize,
         },
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log(data);
+
       setOrderList(data.data.orders);
+      setTotalPage(Math.ceil(data.data.count / pageSize));
     } catch (error) {
       console.log(error);
     }
   };
 
   const handleEditItem = async () => {
-    console.log(item);
+    const isAllGood = onChecking();
+    if (!isAllGood) return;
+    try {
+      const token = localStorage.getItem("access_token").replace(/"/g, "");
+      const { data } = await axiosInstance.put(
+        `/order/payment/change-status`,
+        {
+          payment_ref: item.payment_ref,
+          payment_status: item.payment_status,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setIsModalEditOpen(false);
+      getOrderList();
+      setItem({
+        created_at: "",
+        customer_name: "",
+        total_price: 0,
+        payment_ref: "",
+        payment_method: "",
+        payment_status: "",
+        status: "",
+        note: "",
+      });
+      toast({
+        variant: "success",
+        title: "Cập nhật thành công",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Cập nhật thất bại",
+        description: "Có lỗi xảy ra, xin vui lòng thử lại sau",
+      });
+      console.log(error);
+    }
   };
 
   useEffect(() => {
     getOrderList();
-  }, [paymentMethodFilter, paymentStatusFilter]);
+  }, [paymentMethodFilter, paymentStatusFilter, sortValue, currentPage]);
   return (
     <div>
       <div className="text-xl font-bold flex items-center justify-between">
@@ -102,19 +181,20 @@ const AdminOrdersPage = () => {
                   <div>Tổng thanh toán</div>
                   <div
                     onClick={() => {
-                      if (totalPriceSort === "asc") {
-                        setTotalPriceSort("desc");
-                      } else if (totalPriceSort === "desc") {
-                        setTotalPriceSort("");
+                      if (sortValue === "price-asc") {
+                        setSortValue("price-desc");
+                      } else if (sortValue === "price-desc") {
+                        setSortValue("");
                       } else {
-                        setTotalPriceSort("asc");
+                        setSortValue("price-asc");
                       }
+                      setCurrentPage(1);
                     }}
                     className="cursor-pointer"
                   >
-                    {totalPriceSort === "asc" ? (
+                    {sortValue === "price-asc" ? (
                       <ArrowUpNarrowWide size={16} color="blue" />
-                    ) : totalPriceSort === "desc" ? (
+                    ) : sortValue === "price-desc" ? (
                       <ArrowDownNarrowWide size={16} color="blue" />
                     ) : (
                       <ListFilter size={16} />
@@ -159,6 +239,7 @@ const AdminOrdersPage = () => {
                             } else {
                               setPaymentMethodFilter("");
                             }
+                            setCurrentPage(1);
                           }}
                         >
                           Banking
@@ -175,6 +256,7 @@ const AdminOrdersPage = () => {
                             } else {
                               setPaymentMethodFilter("");
                             }
+                            setCurrentPage(1);
                           }}
                         >
                           COD
@@ -220,6 +302,7 @@ const AdminOrdersPage = () => {
                             } else {
                               setPaymentStatusFilter("");
                             }
+                            setCurrentPage(1);
                           }}
                         >
                           Đã thanh toán
@@ -238,6 +321,7 @@ const AdminOrdersPage = () => {
                             } else {
                               setPaymentStatusFilter("");
                             }
+                            setCurrentPage(1);
                           }}
                         >
                           Đang chờ
@@ -260,7 +344,7 @@ const AdminOrdersPage = () => {
                   <TableCell className="font-medium">{item.id}</TableCell>
                   <TableCell>{item.customer_name}</TableCell>
                   <TableCell>{formatDate(item.created_at)}</TableCell>
-                  <TableCell>{item.total_price}</TableCell>
+                  <TableCell>{item.total_price.toLocaleString()}</TableCell>
                   <TableCell>{item.status}</TableCell>
                   <TableCell>{item.payment_method}</TableCell>
                   <TableCell>{item.payment_status}</TableCell>
@@ -275,6 +359,7 @@ const AdminOrdersPage = () => {
                           created_at: item.created_at,
                           customer_name: item.customer_name,
                           total_price: item.total_price,
+                          payment_ref: item.payment_ref,
                           payment_method: item.payment_method,
                           payment_status: item.payment_status,
                           status: item.status,
@@ -282,7 +367,7 @@ const AdminOrdersPage = () => {
                         });
                       }}
                     >
-                      <Eye size={16} />
+                      <Pencil size={16} />
                     </Button>
                     <Button className="w-10 h-10" variant="outline">
                       <Trash2 size={16} />
@@ -294,31 +379,11 @@ const AdminOrdersPage = () => {
         </Table>
 
         <div className="mt-4">
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <Button className="w-10 h-10" variant="outline">
-                  <ChevronLeft />
-                </Button>
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationLink
-                  href="#"
-                  className="border border-input bg-background hover:bg-accent hover:text-accent-foreground"
-                >
-                  1
-                </PaginationLink>
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationEllipsis />
-              </PaginationItem>
-              <PaginationItem>
-                <Button className="w-10 h-10" variant="outline">
-                  <ChevronRight />
-                </Button>
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
+          <PaginationDemo
+            totalPage={totalPage}
+            currentPage={currentPage}
+            onPageChange={setCurrentPage}
+          />
         </div>
       </div>
 
@@ -332,29 +397,47 @@ const AdminOrdersPage = () => {
               customer_name: "",
               total_price: 0,
               payment_method: "",
+              payment_ref: "",
               payment_status: "",
               status: "",
               note: "",
+            });
+            setErrors({
+              customer_name: false,
+              total_price: false,
+              payment_method: false,
+              payment_status: false,
+              status: false,
+              note: false,
             });
           }}
         >
           <DialogContent className="max-w-[90vw] md:max-w-[800px] max-h-[80vh] overflow-y-auto scrollbar-hide">
             <DialogHeader>
-              <DialogTitle>Chỉnh sửa sản phẩm</DialogTitle>
+              <DialogTitle>Chỉnh sửa đơn hàng</DialogTitle>
             </DialogHeader>
             <div className="flex flex-col gap-4 py-4">
               <div className="flex flex-col gap-2">
                 <Label htmlFor="customer_name" className="">
-                  Tên khách hàng
+                  Tên khách hàng <span className="text-[red]">*</span>
                 </Label>
                 <Input
                   id="customer_name"
                   onChange={(e) => {
-                    setItem((prev) => ({ ...prev, name: e.target.value }));
+                    setItem((prev) => ({
+                      ...prev,
+                      customer_name: e.target.value,
+                    }));
                   }}
-                  value={item.customer_name}
+                  defaultValue={item.customer_name}
                   className="col-span-3"
+                  readOnly
                 />
+                {errors.customer_name && (
+                  <p className="text-sm text-red-500">
+                    Vui lòng nhập tên khách hàng
+                  </p>
+                )}
               </div>
               <div className="flex flex-col gap-2">
                 <Label htmlFor="created_at" className="">
@@ -364,6 +447,7 @@ const AdminOrdersPage = () => {
                   id="created_at"
                   value={formatDate(item.created_at)}
                   className="col-span-3"
+                  readOnly
                 />
               </div>
               <div className="grid grid-cols-12 gap-x-4">
@@ -384,7 +468,8 @@ const AdminOrdersPage = () => {
                   <Input
                     id="status"
                     className="col-span-3"
-                    value={item.payment_status}
+                    value={item.status}
+                    readOnly
                   />
                 </div>
               </div>
@@ -402,13 +487,24 @@ const AdminOrdersPage = () => {
                 </div>
                 <div className="flex flex-col gap-2 col-span-6">
                   <Label htmlFor="payment_status" className="">
-                    Trạng thái thanh toán
+                    Trạng thái thanh toán <span className="text-[red]">*</span>
                   </Label>
                   <Input
                     id="payment_status"
                     className="col-span-3"
-                    value={item.payment_status}
+                    defaultValue={item.payment_status}
+                    onChange={(e) => {
+                      setItem((prev) => ({
+                        ...prev,
+                        payment_status: e.target.value,
+                      }));
+                    }}
                   />
+                  {errors.payment_status && (
+                    <p className="text-sm text-red-500">
+                      Vui lòng nhập trạng thái thanh toán
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -426,6 +522,7 @@ const AdminOrdersPage = () => {
                   }}
                   className="col-span-3"
                   value={item.note}
+                  readOnly
                 />
               </div>
             </div>

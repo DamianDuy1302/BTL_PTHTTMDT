@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import axiosInstance from "@/config/axios";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Chatbot from "@/components/Chatbot";
 
 const perks = [
   {
@@ -46,7 +47,6 @@ export default function Home() {
   const getCategoryList = async () => {
     try {
       const { data } = await axiosInstance.get("/category/list");
-      console.log(data);
 
       setCategoryList(data.data.categories);
     } catch (error) {
@@ -115,23 +115,23 @@ export default function Home() {
               </div>
 
               {/* TODO: List products */}
-              <ProductsReel
-                title="Bộ dụng cụ nhà bếp"
-                href="/products?category_id=2"
-                category_id={2}
-              ></ProductsReel>
-
-              <ProductsReel
-                title="Bình giữ nhiệt"
-                href="/products?category_id=1"
-                category_id={1}
-              ></ProductsReel>
-
-              <ProductsReel
-                title="Chăm sóc sức khỏe"
-                href="/products?category_id=3"
-                category_id={3}
-              ></ProductsReel>
+              {categoryList.length > 0 && (
+                <>
+                  {categoryList.map((item: any, index) => {
+                    if (index > 3) {
+                      return;
+                    }
+                    return (
+                      <ProductsReel
+                        title={item.name}
+                        href={`/products?category_id=${item.id}`}
+                        category_id={item.id}
+                        key={item.id}
+                      ></ProductsReel>
+                    );
+                  })}
+                </>
+              )}
             </MaxWidthWrapper>
 
             <section className="border-t border-gray-200 bg-gray-50">
@@ -163,6 +163,7 @@ export default function Home() {
           </div>
         </div>
         <Footer></Footer>
+        <Chatbot />
       </div>
     </>
   );

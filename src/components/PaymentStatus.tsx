@@ -32,7 +32,7 @@ const PaymentStatus = ({ orderEmail, orderId, isPaid }: PaymentStatusProps) => {
 
       <div>
         <p className="font-medium text-gray-900">Trạng thái đơn hàng</p>
-        <p>{isPaid ? "Đã thanh toán" : "Đang chờ thanh toán"}</p>
+        <p>{isPaid}</p>
       </div>
     </div>
   );

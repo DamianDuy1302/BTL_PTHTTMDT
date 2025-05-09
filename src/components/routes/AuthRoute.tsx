@@ -8,9 +8,6 @@ function AuthRoute({ children }: any) {
   //@ts-ignore
   const { user, isAuthReady } = useAuthStore();
 
-  console.log("user", user);
-  console.log("isAuthReady", isAuthReady);
-
   const router = useRouter();
   const pathname = usePathname();
   const [isChecking, setIsChecking] = useState(true);
@@ -18,13 +15,21 @@ function AuthRoute({ children }: any) {
   useEffect(() => {
     if (!isAuthReady) return; // Chờ trạng thái auth sẵn sàng
     if (isAuthReady && user !== null) {
-      if (pathname === "/sign-in" || pathname === "/sign-up") {
+      if (
+        pathname === "/sign-in" ||
+        pathname === "/sign-up" ||
+        pathname === "/forgot-password"
+      ) {
         router.push("/");
       } else {
         setIsChecking(false);
       }
     } else if (isAuthReady && user === null) {
-      if (pathname === "/cart" || pathname === "/vnpay/return-url") {
+      if (
+        pathname === "/cart" ||
+        pathname === "/vnpay/return-url" ||
+        pathname === "/profile"
+      ) {
         router.push("/sign-in");
       } else {
         setIsChecking(false);

@@ -20,7 +20,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const CartPage = () => {
   const router = useRouter();
-  const { items, removeItem } = useCart();
+  const { items, removeItem, clearCart, addItem, minusItem } = useCart();
   const [isLoading, setIsLoading] = useState(false);
 
   const [errors, setErrors] = useState({
@@ -51,7 +51,7 @@ const CartPage = () => {
   const cartTotal = items.reduce((total, item) => {
     return total + item.price * item.quantity;
   }, 0);
-  const fee = 1;
+  const fee = 10000;
 
   const customAxiosInstance = createAxiosInstance(
     `${process.env.NEXT_PUBLIC_BACKEND_VNPAY_URL}`
@@ -73,7 +73,7 @@ const CartPage = () => {
                   removeSpaces(Object.values(variant.options).join(", ")) ===
                   removeSpaces(Object.values(item.options).join(", "))
               ) || item.variants[0];
-            console.log(variant);
+
             return {
               price: item.price,
               compare_price: item.compare_price,
@@ -84,7 +84,7 @@ const CartPage = () => {
             };
           }),
         ],
-        total_price: cartTotal,
+        total_price: cartTotal + fee,
         note,
         payment_method: paymentMethod,
         payment_ref: paymentRef,
@@ -116,14 +116,16 @@ const CartPage = () => {
           window.location.href = data.data.url;
         }
       } else {
+        clearCart();
         router.push("/vnpay/return-url?vnp_TxnRef=" + paymentRef);
       }
     } catch (error) {
       console.error(error);
       toast({
         variant: "destructive",
-        title: "Checkout failed",
-        description: "Something went wrong, please try again later",
+        title: "Thanh toán thất bại",
+        description:
+          "Có lỗi xảy ra trong quá trình thanh toán, xin vui lòng thử lại sau.",
       });
     } finally {
       setIsLoading(false);
@@ -252,10 +254,37 @@ const CartPage = () => {
 
                           <div className="flex justify-between items-center mt-2">
                             <div className="text-sm">
-                              Số lượng:{" "}
-                              <span className="font-semibold text-gray-900">
+                              {/* Số lượng:{" "} */}
+                              {/* <span className="font-semibold text-gray-900">
                                 {product.quantity}
-                              </span>
+                              </span> */}
+                              <div className="flex items-center gap-1 mt-2">
+                                <Button
+                                  disabled={product.quantity === 1}
+                                  variant={"outline"}
+                                  className="!p-2 h-6 w-6"
+                                  onClick={() => {
+                                    minusItem(product);
+                                  }}
+                                >
+                                  -
+                                </Button>
+                                <Input
+                                  value={product.quantity}
+                                  type="text"
+                                  readOnly
+                                  className="w-[54px] h-6 text-center font-normal"
+                                />
+                                <Button
+                                  variant={"outline"}
+                                  className="!p-2 h-6 w-6"
+                                  onClick={() => {
+                                    addItem(product, 1);
+                                  }}
+                                >
+                                  +
+                                </Button>
+                              </div>
                             </div>
                             <div className="flex space-x-2 text-sm text-gray-700">
                               <Package className="h-5 w-5 flex-shrink-0 text-primary" />
@@ -361,7 +390,7 @@ const CartPage = () => {
 
                   <div className="flex items-center justify-between border-t border-gray-200 pt-4">
                     <div className="flex items-center text-sm text-muted-foreground">
-                      <span>Phí giao dịch</span>
+                      <span>Phí vận chuyển</span>
                     </div>
                     <div className="text-sm font-medium text-gray-900">
                       {true ? (
@@ -388,7 +417,7 @@ const CartPage = () => {
 
                 <div className="mt-6">
                   <Button
-                    disabled={items.length === -1 || isLoading}
+                    disabled={items.length < 1 || isLoading}
                     onClick={() => {
                       handleCheckout();
                     }}

@@ -20,32 +20,71 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const OrderDetailPage = ({ searchParams }) => {
   const router = useRouter();
-
+  const [isLoading, setIsLoading] = useState(false);
   const [items, setItems] = useState([]);
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [note, setNote] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("Banking");
   const [cartTotal, setCartTotal] = useState(0);
-  const fee = 1;
-  const getOrderDetail = async () => {
+  const [status, setStatus] = useState("");
+  const fee = 10000;
+
+  const handleCancelOrder = async () => {
     try {
+      setIsLoading(true);
       //@ts-ignore
       const token = localStorage.getItem("access_token").replace(/"/g, "");
-      const { data } = await axiosInstance.get(
-        `/order/detail/${searchParams.id}`,
+      const { data } = await axiosInstance.put(
+        `/order/cancel`,
+        {
+          cancel_reason: "Hủy đơn hàng",
+          order_id: items[0].order_id,
+        },
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
-      console.log(data);
+
+      toast({
+        variant: "success",
+        title: "Hủy đơn hàng thành công",
+      });
+      router.push("/order-list");
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Hủy đơn hàng thất bại",
+        description:
+          "Có lỗi xảy ra trong quá trình hủy đơn hàng, xin vui lòng thử lại sau.",
+      });
+      console.log(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  const getOrderDetail = async () => {
+    try {
+      //@ts-ignore
+      const token = localStorage.getItem("access_token").replace(/"/g, "");
+      const { data } = await axiosInstance.get(
+        `/order/detail?order-id=${searchParams.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setStatus(data.data.payment.status);
       setItems(data.data.order_items);
       setPhone(data.data.receive_info.phone);
       setAddress(data.data.receive_info.address);
-      setNote(data.data.receive_info.note);
+      setNote(data.data.note);
       setPaymentMethod(data.data.payment.payment_method);
+
       setCartTotal(data.data.total_price);
     } catch (error) {
       console.log(error);
@@ -231,7 +270,6 @@ const OrderDetailPage = ({ searchParams }) => {
                       //   "focus-visible:ring-red-500": errors.email,
                       // })}
                       placeholder="Ghi chú cho đơn hàng"
-                      defaultValue={note}
                       value={note}
                       readOnly
                     />
@@ -243,14 +281,13 @@ const OrderDetailPage = ({ searchParams }) => {
                     <Label htmlFor="payment_method">
                       Phương thức thanh toán
                     </Label>
-                    <RadioGroup
-                      defaultValue="Banking"
-                      className="mt-2"
-                      value={paymentMethod}
-                    >
+                    <RadioGroup className="mt-2" value={paymentMethod}>
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="Banking" id="Banking" />
-                        <Label htmlFor="Banking">
+                        <RadioGroupItem
+                          value={paymentMethod}
+                          key={paymentMethod}
+                        />
+                        <Label>
                           {paymentMethod === "Banking" ? "Chuyển khoản" : "COD"}
                         </Label>
                       </div>
@@ -266,7 +303,7 @@ const OrderDetailPage = ({ searchParams }) => {
                     <p className="text-sm text-gray-600">Tạm tính</p>
                     <p className="text-sm font-medium text-gray-900">
                       {true ? (
-                        formatPrice(cartTotal)
+                        formatPrice(cartTotal - fee)
                       ) : (
                         <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                       )}
@@ -275,7 +312,7 @@ const OrderDetailPage = ({ searchParams }) => {
 
                   <div className="flex items-center justify-between border-t border-gray-200 pt-4">
                     <div className="flex items-center text-sm text-muted-foreground">
-                      <span>Phí giao dịch</span>
+                      <span>Phí vận chuyển</span>
                     </div>
                     <div className="text-sm font-medium text-gray-900">
                       {true ? (
@@ -292,13 +329,30 @@ const OrderDetailPage = ({ searchParams }) => {
                     </div>
                     <div className="text-base font-medium text-gray-900">
                       {true ? (
-                        formatPrice(cartTotal + fee)
+                        formatPrice(cartTotal)
                       ) : (
                         <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                       )}
                     </div>
                   </div>
                 </div>
+                {status === "Đang chờ" && (
+                  <div className="mt-6">
+                    <Button
+                      disabled={items.length === -1 || isLoading}
+                      onClick={() => {
+                        handleCancelOrder();
+                      }}
+                      className="w-full"
+                      size="lg"
+                    >
+                      {isLoading ? (
+                        <Loader2 className="w-4 h-4 animate-spin mr-1.5" />
+                      ) : null}
+                      Hủy đơn hàng
+                    </Button>
+                  </div>
+                )}
               </section>
             </div>
           </div>

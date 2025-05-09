@@ -12,18 +12,43 @@ import {
 import useAuthStore from "@/stores/authStore";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
+import { useCart } from "@/stores/cartStore";
 
 const UserAccountNav = ({ user }: any) => {
   //@ts-ignore
   const { clearUserData } = useAuthStore();
+  const { items, clearCart } = useCart();
   const { toast } = useToast();
   const router = useRouter();
   const handleLogOut = () => {
+    const saveCart = (userEmail, items) => {
+      // Lấy data cũ từ localStorage
+      const existingData = JSON.parse(localStorage.getItem("csa")) || [];
+
+      // Tìm xem có user với email này chưa
+      const index = existingData.findIndex(
+        (entry) => entry.email === userEmail
+      );
+
+      if (index !== -1) {
+        // Nếu đã tồn tại -> update items
+        existingData[index].items = items;
+      } else {
+        // Nếu chưa tồn tại -> thêm mới
+        existingData.push({ email: userEmail, items });
+      }
+
+      // Ghi lại vào localStorage
+      localStorage.setItem("csa", JSON.stringify(existingData));
+    };
+
+    saveCart(user.email, items);
+    clearCart();
+    clearUserData();
     toast({
       variant: "success",
-      title: "Sign out successfully",
+      title: "Đăng xuất thành công",
     });
-    clearUserData();
   };
   return (
     <DropdownMenu>
@@ -47,6 +72,15 @@ const UserAccountNav = ({ user }: any) => {
             <Link href="/admin/dashboard">Trang Admin</Link>
           </DropdownMenuItem>
         )}
+
+        <DropdownMenuItem
+          className="cursor-pointer"
+          onClick={() => {
+            router.push("/profile");
+          }}
+        >
+          Hồ sơ
+        </DropdownMenuItem>
 
         <DropdownMenuItem
           className="cursor-pointer"

@@ -23,7 +23,6 @@ const ProductsReel = (props: ProductsReelProps) => {
           "category-id": category_id,
         },
       });
-      console.log(getProductDataResponse);
       setProductList(getProductDataResponse.data.data.product);
     } catch (error) {
       console.error(error);

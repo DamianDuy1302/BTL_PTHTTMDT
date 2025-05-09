@@ -53,15 +53,15 @@ const SignUpPage = () => {
       });
       toast({
         variant: "success",
-        title: "Sign up successfully",
+        title: "Đăng ký thành công",
       });
       router.push("/sign-in");
     } catch (error) {
       console.log(error);
       toast({
         variant: "destructive",
-        title: "Sign up failed",
-        description: "Something went wrong, please try again later",
+        title: "Đăng ký thất bại",
+        description: "Có lỗi xảy ra, xin vui lòng thử lại sau",
       });
     } finally {
       setIsLoading(false);
@@ -76,7 +76,7 @@ const SignUpPage = () => {
             <div className="flex flex-col items-center space-y-2 text-center">
               <Icons.logo className="h-20 w-20" />
               <h1 className="text-2xl font-semibold tracking-tight">
-                Create an account
+                Đăng ký tài khoản
               </h1>
 
               <Link
@@ -86,7 +86,7 @@ const SignUpPage = () => {
                 })}
                 href="/sign-in"
               >
-                Already have an account? Sign-in
+                Đã có tài khoản? Đăng nhập
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
@@ -104,12 +104,14 @@ const SignUpPage = () => {
                       onChange={(e) => setEmail(e.target.value)}
                     />
                     {errors.email && (
-                      <p className="text-sm text-red-500">Email is required</p>
+                      <p className="text-sm text-red-500">
+                        Vui lòng nhập email
+                      </p>
                     )}
                   </div>
 
                   <div className="grid gap-2 py-2">
-                    <Label htmlFor="password">Password</Label>
+                    <Label htmlFor="password">Mật khẩu</Label>
                     <Input
                       type="password"
                       className={cn({
@@ -120,7 +122,7 @@ const SignUpPage = () => {
                     />
                     {errors.password && (
                       <p className="text-sm text-red-500">
-                        Password is required
+                        Vui lòng nhập mật khẩu
                       </p>
                     )}
                   </div>
@@ -135,7 +137,7 @@ const SignUpPage = () => {
                     {isLoading && (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     )}
-                    Sign up
+                    Đăng ký
                   </Button>
                 </div>
               </form>

@@ -14,18 +14,36 @@ import UserAccountNav from "./UserAccountNav";
 const NavBar = () => {
   // @ts-ignore
   const { user, clearUserData } = useAuthStore();
-  const { items } = useCart();
+  const { items, clearCart } = useCart();
   const [isOpenMyAccount, setIsOpenMyAccount] = useState(false);
   const [isOpenMobileNav, setIsOpenMobileNav] = useState(false);
 
   const { toast } = useToast();
   const router = useRouter();
   const handleLogOut = () => {
+    const saveCart = (userEmail, items) => {
+      const existingData = JSON.parse(localStorage.getItem("csa")) || [];
+
+      const index = existingData.findIndex(
+        (entry) => entry.email === userEmail
+      );
+
+      if (index !== -1) {
+        existingData[index].items = items;
+      } else {
+        existingData.push({ email: userEmail, items });
+      }
+
+      localStorage.setItem("csa", JSON.stringify(existingData));
+    };
+
+    saveCart(user.email, items);
+    clearCart();
+    clearUserData();
     toast({
       variant: "success",
-      title: "Sign out successfully",
+      title: "Đăng xuất thành công",
     });
-    clearUserData();
   };
 
   useEffect(() => {
@@ -156,6 +174,15 @@ const NavBar = () => {
                                         Trang Admin
                                       </Link>
                                     )}
+                                    <Link
+                                      href="/profile"
+                                      className="hover:text-gray-900"
+                                      onClick={() => {
+                                        setIsOpenMobileNav(false);
+                                      }}
+                                    >
+                                      Hồ sơ
+                                    </Link>
                                     <Link
                                       href="/order-list"
                                       className="hover:text-gray-900"
